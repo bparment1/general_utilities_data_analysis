@@ -126,6 +126,11 @@ ggplot(aes(x = long, y = lat, group = group), data = fortified_nc_df) + geom_pat
 test_nb <- poly2nb(nc_sp)
 poly2nb #show content of function
 
+test_nb[[1]]
+> test_nb[[1]]
+[1] 17 19 41 68 76 79
+test2
+test
 test_poly <- nc_sp@polygons[[1]] #show first polygons
 
 test <- as(nc_sp, "SpatialPolygons")
@@ -137,8 +142,9 @@ class(test2@lines[[1]])
 #works fine; I modified the code such that
 #xx1<-as(xx, "owin")
 
-gDifference(test2[[1]])
+gDifference(test2@lines[[1]],test2@lines[[17]])
 
+test <- gDifference(nc_sp@polygons[[1]],nc_sp@polygons[[17]])
 
 
 station_nb <- nrow(data)
