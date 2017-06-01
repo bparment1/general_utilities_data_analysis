@@ -127,72 +127,25 @@ test_nb <- poly2nb(nc_sp)
 poly2nb #show content of function
 
 test_nb[[1]]
-> test_nb[[1]]
-[1] 17 19 41 68 76 79
+#> test_nb[[1]]
+#[1] 17 19 41 68 76 79
 test2
 test
-test_poly <- nc_sp@polygons[[1]] #show first polygons
 
-test <- as(nc_sp, "SpatialPolygons")
-test2 <- as(nc_sp, "SpatialLines")
-str(test2,max.level = 2)
+#for i in list of poly:
+test_poly1 <- nc_sp@polygons[[1]] #show first polygons
+test_poly2 <- nc_sp@polygons[[17]] #show first polygons
 
-class(test2@lines[[1]])
+test_poly1 <- nc_sp[1,] #show first polygons
+test_poly2 <- nc_sp[17,] #show first polygons
 
-#works fine; I modified the code such that
-#xx1<-as(xx, "owin")
-
-gDifference(test2@lines[[1]],test2@lines[[17]])
-
-test <- gDifference(nc_sp@polygons[[1]],nc_sp@polygons[[17]])
+gInter_poly <- gIntersection(test_poly1,test_poly2)
+SpatialLinesLengths(gInter_poly)
 
 
-station_nb <- nrow(data)
-if(is.null(max_dist)){
-  while(station_nb > target_min_nb){
-    data <- remove.duplicates(data, zero = dist_val) #spatially sub sample...
-    dist_val <- dist_val + step_val
-    station_nb <- nrow(data)
-}
-  #setdiff(as.character(data$id),as.character(data_in$id))
-  #ind.selected <-match(as.character(data$id),as.character(data_in$id)) #index of stations row selected
-  #ind.removed  <- setdiff(1:nrow(data_in), ind.selected) #index of stations rows removed 
-  id_selected <- as.character(data$id)
-  id_removed <- setdiff(unique(as.character(data_in$id)),as.character(data$id))
+gInter_poly_test <- gIntersection(nc_sp,nc_sp)
+#> plot(test_poly1,add=T,col="red")
 
 
-
-
-## From fortified table one can calculate length object...
-str(nc_sp,max.level=2)
-
-
-debug(poly2nb_test)
-test_nb <- poly2nb_test(nc_sp)
-
-#http://www.nickeubank.com/wp-content/uploads/2015/10/RGIS1_SpatialDataTypes_part1_vectorData.html
-?gTouches
-
-test <- gTouches(nc_sp,byid=T)
-test_nb[[1]]
-poly2nb
-
-x = readWKT("POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))")
-y = readWKT("POLYGON ((3 3, 7 3, 7 7, 3 7, 3 3))")
-d = gDifference(x,y)
-plot(d,col="red",pbg="white")
-
-# Empty geometry since y is completely contained with x
-d2 = gDifference(y,x)
-
-y <- as(test_poly, 'SpatialLines') 
-
-
-# Intersect lines with raster "polygons" and add length to new lines segments
-#rrst.poly <- rasterToPolygons(rrst)
-#rp <- gIntersection(roads, rrst.poly, byid=TRUE)
-#rp <- SpatialLinesDataFrame(rp, data.frame(row.names=sapply(slot(rp, "lines"), 
-#                                                            function(x) slot(x, "ID")), ID=1:length(rp), 
-#                                           length=SpatialLinesLengths(rp)/1000) ) 
-
+################## END OF SCRIPT #########################
 
