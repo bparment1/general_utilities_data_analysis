@@ -39,6 +39,11 @@ library(ggplot2)
 
 ###### Functions used in this script
 
+function_neighbors_calculations <- "shared_length_and_perimeters_polygons_functions_06022017.R" #PARAM 1
+script_path <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/scripts" #path to script #PARAM 
+
+source(file.path(script_path,function_neighbors_calculations)) #source all functions used in this script 1.
+
 ##create an output directory
 create_dir_fun <- function(out_dir,out_suffix){
   #if out_suffix is not null then append out_suffix string
@@ -63,11 +68,13 @@ load_obj <- function(f){
 #####  Parameters and argument set up ###########
 
 #ARGS 1
-#in_dir <- "/research-home/bparmentier/Data/projects/urbanization_effects_on_biodiversity"
 in_dir <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/data"
 #ARGS 2
 infile_name <- "wwf_terr_ecos.shp"
 #ARGS 3
+num_cores <- 2
+#ARGS 4
+
 #ARGS 5
 out_dir <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/outputs" #parent directory where the new output directory is located
 #ARGS 6
@@ -100,15 +107,13 @@ if(create_out_dir_param==TRUE){
 wwf_sp <- readOGR(in_dir,sub(".shp","",infile_name))
 plot(wwf_sp)
 
-list_nb_wwf <- poly2nb(wwf_sp)
+#list_nb_wwf <- poly2nb(wwf_sp)
 
 ### let's first test on North Carolina data
 nc_file <- system.file("etc/shapes/sids.shp", package = "spdep")[1]
 nc_file #path to the file provided by sp
 nc_sp <- readOGR(dirname(nc_file),sub(".shp","",basename(nc_file)))
 plot(nc_sp)
-
-#https://stackoverflow.com/questions/12196440/extract-feature-coordinates-from-spatialpolygons-and-other-sp-classes
 
 dim(nc_sp) #100 polygons!
 #use fortify from ggplot2 to convert the sp object spatial attributes into a data.frame
@@ -133,58 +138,6 @@ test_nb[[1]]
 #[1] 17 19 41 68 76 79
 test2
 test
-
-#for i in list of poly:
-#test_poly1 <- nc_sp@polygons[[1]] #show first polygons
-#test_poly2 <- nc_sp@polygons[[17]] #show first polygons
-
-intersect_poly_length_fun <- function(poly_sp1,poly_sp2){
-  intersection_line <- gIntersection(poly_sp1,poly_sp2)
-  length_val <- SpatialLinesLengths(intersection_line)
-  intersect_obj <- list(length_val,intersection_line)
-  return(intersect_obj)
-}
-
-calculate_shared_length <- function(i,poly_sp,poly_nb){
-  poly_sp_ref_selected <- poly_sp[i,] # reference polygon under consideration for which neighbours are compared to
-  poly_nb_selected <- poly_nb[[i]] #list of neighbour for the ref poly selected
-  list_polygons_neighbors <- lapply(poly_nb_selected,FUN=function(j){poly_sp[j,]})
-  names(list_polygons_neighbors) <- poly_nb_selected
-  
-  lapply(list_polygons_neighbors,FUN=interesect_poly_length_fun)
-  #test_poly1 <- nc_sp[1,] #show first polygons
-  #test_poly2 <- nc_sp[17,] #show first polygons
-}
-
-calculate_shared_boundaries_polybons <- function(poly_sp,poly_nb=NULL,edges=F,num_cores=1,out_dir=".",out_suffix=""){
-  #Calculate the length of shared edged between neighbours of a spatial polygons data frame object
-  #
-  ##INPUTS:
-  #1) poly_sp
-  #2) list_nb
-  #3) num_cores
-  #4) edges: if edges is TRUE keep spatialLines objects corresponding to share boundaries between polygons
-  #4) out_dir
-  #5) out_suffix
-  
-  ####### Begin function ####
-  
-  if(is.null(poly_nb)){
-    poly_nb <- poly2nb(poly_sp)
-  }
-  
-
-  mclapply(1:length(poly_nb),
-           FUN=)
-  
-
-  
-  gInter_poly <- gIntersection(test_poly1,test_poly2)
-  SpatialLinesLengths(gInter_poly)
-  
-  return()
-}
-
 
 
 ################## END OF SCRIPT #########################
