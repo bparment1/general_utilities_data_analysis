@@ -2,7 +2,7 @@
 ##
 ## 
 ## DATE CREATED: 05/30/2017
-## DATE MODIFIED: 05/30/2017
+## DATE MODIFIED: 06/02/2017
 ## AUTHORS: Benoit Parmentier 
 ## Version: 1
 ## PROJECT: Urbanization impact on biodiversity
@@ -100,6 +100,8 @@ if(create_out_dir_param==TRUE){
 wwf_sp <- readOGR(in_dir,sub(".shp","",infile_name))
 plot(wwf_sp)
 
+list_nb_wwf <- poly2nb(wwf_sp)
+
 ### let's first test on North Carolina data
 nc_file <- system.file("etc/shapes/sids.shp", package = "spdep")[1]
 nc_file #path to the file provided by sp
@@ -133,18 +135,56 @@ test2
 test
 
 #for i in list of poly:
-test_poly1 <- nc_sp@polygons[[1]] #show first polygons
-test_poly2 <- nc_sp@polygons[[17]] #show first polygons
+#test_poly1 <- nc_sp@polygons[[1]] #show first polygons
+#test_poly2 <- nc_sp@polygons[[17]] #show first polygons
 
-test_poly1 <- nc_sp[1,] #show first polygons
-test_poly2 <- nc_sp[17,] #show first polygons
+intersect_poly_length_fun <- function(poly_sp1,poly_sp2){
+  intersection_line <- gIntersection(poly_sp1,poly_sp2)
+  length_val <- SpatialLinesLengths(intersection_line)
+  intersect_obj <- list(length_val,intersection_line)
+  return(intersect_obj)
+}
 
-gInter_poly <- gIntersection(test_poly1,test_poly2)
-SpatialLinesLengths(gInter_poly)
+calculate_shared_length <- function(i,poly_sp,poly_nb){
+  poly_sp_ref_selected <- poly_sp[i,] # reference polygon under consideration for which neighbours are compared to
+  poly_nb_selected <- poly_nb[[i]] #list of neighbour for the ref poly selected
+  list_polygons_neighbors <- lapply(poly_nb_selected,FUN=function(j){poly_sp[j,]})
+  names(list_polygons_neighbors) <- poly_nb_selected
+  
+  lapply(list_polygons_neighbors,FUN=interesect_poly_length_fun)
+  #test_poly1 <- nc_sp[1,] #show first polygons
+  #test_poly2 <- nc_sp[17,] #show first polygons
+}
 
+calculate_shared_boundaries_polybons <- function(poly_sp,poly_nb=NULL,edges=F,num_cores=1,out_dir=".",out_suffix=""){
+  #Calculate the length of shared edged between neighbours of a spatial polygons data frame object
+  #
+  ##INPUTS:
+  #1) poly_sp
+  #2) list_nb
+  #3) num_cores
+  #4) edges: if edges is TRUE keep spatialLines objects corresponding to share boundaries between polygons
+  #4) out_dir
+  #5) out_suffix
+  
+  ####### Begin function ####
+  
+  if(is.null(poly_nb)){
+    poly_nb <- poly2nb(poly_sp)
+  }
+  
 
-gInter_poly_test <- gIntersection(nc_sp,nc_sp)
-#> plot(test_poly1,add=T,col="red")
+  mclapply(1:length(poly_nb),
+           FUN=)
+  
+
+  
+  gInter_poly <- gIntersection(test_poly1,test_poly2)
+  SpatialLinesLengths(gInter_poly)
+  
+  return()
+}
+
 
 
 ################## END OF SCRIPT #########################
