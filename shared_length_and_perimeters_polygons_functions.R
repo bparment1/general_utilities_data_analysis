@@ -9,7 +9,7 @@
 ## ISSUE: 
 ## TO DO:
 ##
-## COMMIT: initial commit
+## COMMIT: dealing with points and line connectivity among neighbours
 ##
 ## Links to investigate:
 #https://gis.stackexchange.com/questions/119993/convert-line-shapefile-to-raster-value-total-length-of-lines-within-cell
@@ -40,16 +40,23 @@ library(ggplot2)
 ###### Functions used in this script
 
 intersect_poly_length_fun <- function(poly_sp1,poly_sp2){
-  intersection_line <- gIntersection(poly_sp1,poly_sp2)
-  length_val <- SpatialLinesLengths(intersection_line)
-  intersect_obj <- list(length_val,intersection_line)
+  #Intersects two polygons and returns the shared boundary and length
+  #
+  ## To do add option for overlap? if polygons
+  
+  intersection_sp <- gIntersection(poly_sp1,poly_sp2)
+  #note that sp object can be points or lines, if points then lenght is zero
+  if(inherits(intersection_sp,"SpatialLines")){
+    length_val <- SpatialLinesLengths(intersection_sp)
+  }else{
+    length_val <- 0
+  }
+  intersect_obj <- list(length_val,intersection_sp)
+  
   return(intersect_obj)
 }
 
 calculate_shared_length <- function(i,poly_sp,poly_nb){
-  #
-  #
-  
   poly_sp_ref_selected <- poly_sp[i,] # reference polygon under consideration for which neighbours are compared to
   poly_nb_selected <- poly_nb[[i]] #list of neighbour for the ref poly selected
   list_polygons_neighbors <- lapply(poly_nb_selected,FUN=function(j){poly_sp[j,]})
@@ -57,7 +64,7 @@ calculate_shared_length <- function(i,poly_sp,poly_nb){
   
   #debug(interesect_poly_length_fun)
   
-  list_lines_shared <- lapply(list_polygons_neighbors,FUN=interesect_poly_length_fun,poly_sp2=poly_sp_ref_selected)
+  list_lines_shared <- lapply(list_polygons_neighbors,FUN=intersect_poly_length_fun,poly_sp2=poly_sp_ref_selected)
   return(list_lines_shared)
 }
 
@@ -78,6 +85,11 @@ calculate_shared_boundaries_polygons <- function(poly_sp,poly_nb=NULL,edges=F,nu
     poly_nb <- poly2nb(poly_sp)
   }
   
+  #debug(calculate_shared_length)
+  #test_lines_shared <- calculate_shared_length(11,
+  #                                             poly_sp = poly_sp,
+  #                                             poly_nb = poly_nb )
+  
   no_poly <- length(poly_sp) #number of polygons features in the dataset
   list_lines_shared <- mclapply(1:no_poly,
                                     FUN=calculate_shared_length,
@@ -85,15 +97,8 @@ calculate_shared_boundaries_polygons <- function(poly_sp,poly_nb=NULL,edges=F,nu
                                     poly_nb = poly_nb,
                                     mc.preschedule=FALSE,
                                     mc.cores = num_cores)
-  #debug(calculate_shared_length)
-  test_lines_shared <- calculate_shared_length(11,
-                                poly_sp = poly_sp,
-                                poly_nb = poly_nb )
   
-  gInter_poly <- gIntersection(test_poly1,test_poly2)
-  SpatialLinesLengths(gInter_poly)
-  
-  return()
+  return(list_lines_shared)
 }
 
 
