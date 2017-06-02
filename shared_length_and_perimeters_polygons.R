@@ -1,5 +1,5 @@
 ############### SESYNC Research Support: Urbanization Impact on Biodiversity ########## 
-##
+## Calculating shared length of boudaries of neighbors. This is useful for spatial analysis.
 ## 
 ## DATE CREATED: 05/30/2017
 ## DATE MODIFIED: 06/02/2017
@@ -9,7 +9,7 @@
 ## ISSUE: 
 ## TO DO:
 ##
-## COMMIT: initial commit
+## COMMIT: dealing with length of boundaries when point connectivity
 ##
 ## Links to investigate:
 #https://gis.stackexchange.com/questions/119993/convert-line-shapefile-to-raster-value-total-length-of-lines-within-cell
@@ -39,7 +39,7 @@ library(ggplot2)
 
 ###### Functions used in this script
 
-function_neighbors_calculations <- "shared_length_and_perimeters_polygons_functions_06022017.R" #PARAM 1
+function_neighbors_calculations <- "shared_length_and_perimeters_polygons_functions_06022017c.R" #PARAM 1
 script_path <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/scripts" #path to script #PARAM 
 
 source(file.path(script_path,function_neighbors_calculations)) #source all functions used in this script 1.
@@ -116,28 +116,29 @@ nc_sp <- readOGR(dirname(nc_file),sub(".shp","",basename(nc_file)))
 plot(nc_sp)
 
 dim(nc_sp) #100 polygons!
-#use fortify from ggplot2 to convert the sp object spatial attributes into a data.frame
-fortified_nc_df <- fortify(nc_sp)
-class(fortified_nc_df)
-View(fortified_nc_df)
 
-#see location1599: makring polygons as holes with a logical (TRUE/FALSE) flag, the hole slot, and using ring 
-#direction -- clockwise rings are taken as not being holes, anti clokcwise as being holes. This is needed because
-#the non-topological representation of polygons has no easy way of knowing that a polygon represent internaal boudnary of
-#an encosing polygon, a hole or lake.
- 
-require(ggplot2); theme_set(theme_bw())
-ggplot(aes(x = long, y = lat, group = group), data = fortified_nc_df) + geom_path()
+nc_nb <- poly2nb(nc_sp)
 
-#https://stackoverflow.com/questions/26499010/finding-adjacent-polygons-in-r-neighbors
-test_nb <- poly2nb(nc_sp)
-poly2nb #show content of function
-
-test_nb[[1]]
-#> test_nb[[1]]
+nc_nb[[1]]
+#> nc_nb[[1]]
 #[1] 17 19 41 68 76 79
-test2
-test
+nc_nb[[11]]
+
+#resolve issues for poly 11 , no boundaries, only point
+#debug(calculate_shared_length)
+#function_neighbors_calculations <- "shared_length_and_perimeters_polygons_functions_06022017c.R" #PARAM 1
+#script_path <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/scripts" #path to script #PARAM 
+
+#source(file.path(script_path,function_neighbors_calculations)) #source all functions used in this script 1.
+
+test_lines_shared <- calculate_shared_length(11,
+                                             poly_sp = nc_sp,
+                                             poly_nb = nc_nb )
+
+
+test_shared_boundaries <- calculate_shared_boundaries_polygons(poly_sp=nc_sp,poly_nb=NULL,edges=T,num_cores=num_cores,out_dir=out_dir,out_suffix)
+
+test_shared_boundaries[[1]]
 
 
 ################## END OF SCRIPT #########################
