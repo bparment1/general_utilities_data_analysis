@@ -2,14 +2,14 @@
 ## Calculating shared length of boudaries of neighbors. This is useful for spatial analysis.
 ## 
 ## DATE CREATED: 05/30/2017
-## DATE MODIFIED: 06/02/2017
+## DATE MODIFIED: 06/07/2017
 ## AUTHORS: Benoit Parmentier 
 ## Version: 1
 ## PROJECT: Urbanization impact on biodiversity
 ## ISSUE: 
 ## TO DO:
 ##
-## COMMIT: dealing with length of boundaries when point connectivity
+## COMMIT: modify code to run on the cluster and check that everything is saved
 ##
 ## Links to investigate:
 #https://gis.stackexchange.com/questions/119993/convert-line-shapefile-to-raster-value-total-length-of-lines-within-cell
@@ -39,7 +39,7 @@ library(ggplot2)
 
 ###### Functions used in this script
 
-function_neighbors_calculations <- "shared_length_and_perimeters_polygons_functions_06022017c.R" #PARAM 1
+function_neighbors_calculations <- "shared_length_and_perimeters_polygons_functions_06072017.R" #PARAM 1
 script_path <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/scripts" #path to script #PARAM 
 
 source(file.path(script_path,function_neighbors_calculations)) #source all functions used in this script 1.
@@ -70,9 +70,11 @@ load_obj <- function(f){
 #ARGS 1
 in_dir <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/data"
 #ARGS 2
-infile_name <- "wwf_terr_ecos.shp"
+#infile_name <- "Biomes_disolv.shp"
+infile_name <- "sids.shp"
+
 #ARGS 3
-num_cores <- 2
+num_cores <- 8
 #ARGS 4
 
 #ARGS 5
@@ -80,7 +82,7 @@ out_dir <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiver
 #ARGS 6
 create_out_dir_param=TRUE #create a new ouput dir if TRUE
 #ARGS 7
-out_suffix <- "urbanization_effects_biodiversity_05302017"
+out_suffix <- "urbanization_effects_biodiversity_06092017"
 
 ################# START SCRIPT ###############################
 
@@ -104,41 +106,38 @@ if(create_out_dir_param==TRUE){
 
 ## Step 1: read in the data and generate time stamps
 
-wwf_sp <- readOGR(in_dir,sub(".shp","",infile_name))
-plot(wwf_sp)
+poly_sp <- readOGR(in_dir,sub(".shp","",infile_name))
+#plot(wwf_sp)
 
+test_poly <- poly_sp@polygons[[1]] #show first polygons 
+test_poly
 #list_nb_wwf <- poly2nb(wwf_sp)
 
 ### let's first test on North Carolina data
-nc_file <- system.file("etc/shapes/sids.shp", package = "spdep")[1]
-nc_file #path to the file provided by sp
-nc_sp <- readOGR(dirname(nc_file),sub(".shp","",basename(nc_file)))
-plot(nc_sp)
+#nc_file #path to the file provided by sp
+#nc_sp <- readOGR(dirname(nc_file),sub(".shp","",basename(nc_file)))
+#plot(nc_sp)
 
-dim(nc_sp) #100 polygons!
+#dim(nc_sp) #100 polygons!
 
-nc_nb <- poly2nb(nc_sp)
+#nc_nb <- poly2nb(nc_sp)
 
-nc_nb[[1]]
+#nc_nb[[1]]
 #> nc_nb[[1]]
 #[1] 17 19 41 68 76 79
-nc_nb[[11]]
-
-#resolve issues for poly 11 , no boundaries, only point
-#debug(calculate_shared_length)
-#function_neighbors_calculations <- "shared_length_and_perimeters_polygons_functions_06022017c.R" #PARAM 1
-#script_path <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/scripts" #path to script #PARAM 
-
-#source(file.path(script_path,function_neighbors_calculations)) #source all functions used in this script 1.
-
-test_lines_shared <- calculate_shared_length(11,
-                                             poly_sp = nc_sp,
-                                             poly_nb = nc_nb )
+#nc_nb[[11]]
 
 
-test_shared_boundaries <- calculate_shared_boundaries_polygons(poly_sp=nc_sp,poly_nb=NULL,edges=T,num_cores=num_cores,out_dir=out_dir,out_suffix)
+#debug(calculate_shared_boundaries_polygons)
 
-test_shared_boundaries[[1]]
+
+test_shared_boundaries <- calculate_shared_boundaries_polygons(poly_sp=poly_sp,
+                                                               poly_nb=NULL,
+                                                               edges=T,
+                                                               num_cores=num_cores,
+                                                               out_dir=out_dir,
+                                                               out_suffix= out_suffix)
+
 
 
 ################## END OF SCRIPT #########################
