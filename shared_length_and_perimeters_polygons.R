@@ -2,14 +2,14 @@
 ## Calculating shared length of boudaries of neighbors. This is useful for spatial analysis.
 ## 
 ## DATE CREATED: 05/30/2017
-## DATE MODIFIED: 06/07/2017
+## DATE MODIFIED: 06/09/2017
 ## AUTHORS: Benoit Parmentier 
 ## Version: 1
 ## PROJECT: Urbanization impact on biodiversity
 ## ISSUE: 
 ## TO DO:
 ##
-## COMMIT: modify code to run on the cluster and check that everything is saved
+## COMMIT: get system env var to set the input
 ##
 ## Links to investigate:
 #https://gis.stackexchange.com/questions/119993/convert-line-shapefile-to-raster-value-total-length-of-lines-within-cell
@@ -71,8 +71,9 @@ load_obj <- function(f){
 in_dir <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/data"
 #ARGS 2
 #infile_name <- "Biomes_disolv.shp"
-infile_name <- "sids.shp"
-
+#infile_name <- "sids.shp"
+INFILE_NAME <- Sys.getenv('INFILE_NAME')
+infile_name <- as.character(INFILE_NAME)
 #ARGS 3
 num_cores <- 8
 #ARGS 4
