@@ -8,7 +8,11 @@
 #SBATCH --partition=sesyncshared        # queue name, this is for debugging and testing
 
 pwd; hostname; date
+
  
 echo "Running shared boundaries code for testing"
  
-Rscript --vanilla /nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/scripts/shared_length_and_perimeters_polygons_06072017.R
+INFILE_NAME=sids.shp
+export INFILE_NAME
+
+Rscript --vanilla /nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/scripts/shared_length_and_perimeters_polygons_06092017.R
