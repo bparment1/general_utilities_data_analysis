@@ -3,14 +3,14 @@
 ## Calculating shared length of boudaries of neighbors. This is useful for spatial analysis.
 ## 
 ## DATE CREATED: 06/02/2017
-## DATE MODIFIED: 06/02/2017
+## DATE MODIFIED: 06/13/2017
 ## AUTHORS: Benoit Parmentier 
 ## Version: 1
 ## PROJECT: Urbanization impact on biodiversity
 ## ISSUE: 
 ## TO DO:
 ##
-## COMMIT: modifying outputs of list to data.frame of connectivity and list spatial obj
+## COMMIT: modifying outputs to save object for cluster run + documentation
 ##
 ## Links to investigate:
 #https://gis.stackexchange.com/questions/119993/convert-line-shapefile-to-raster-value-total-length-of-lines-within-cell
@@ -64,8 +64,22 @@ intersect_poly_length_fun <- function(poly_sp1,poly_sp2){
 }
 
 calculate_shared_length <- function(i,poly_sp,poly_nb){
+  #This function compute share boundary length between a polyon and its neighbour.
+  #It assumes that a collection of polygon feature (e.g. spatialPolygonDataFrame).
+  # AUTHORS : Benoit Parmentier
+  # CREATED : 06/02/2017
+  # MODIFIED: 06/13/2017
   #
-  #
+  #INPUTS
+  #1)i : index selecting specific polygons and its neighbours
+  #2)poly_sp : SpatialPolygonDataFrame object corresponding to a specific feature collection
+  #3)poly_nb : neighbour object from spdep package
+  #OUTPUTS
+  #shared_nb_obj: object as list composed of
+  #1)nb_df: data.frame with ID of neighbour and length of shared border, length is zero if point
+  #2)list_nb_sp: list object corresponding to neighbours (spatial polygon or spatial point)
+  
+  ############ BEGIN SCRIPT ###############
   
   poly_sp_ref_selected <- poly_sp[i,] # reference polygon under consideration for which neighbours are compared to
   poly_nb_selected <- poly_nb[[i]] #list of neighbour for the ref poly selected
@@ -95,15 +109,21 @@ calculate_shared_length <- function(i,poly_sp,poly_nb){
 }
 
 calculate_shared_boundaries_polygons <- function(poly_sp,poly_nb=NULL,edges=F,num_cores=1,out_dir=".",out_suffix=""){
+  #
   #Calculate the length of shared edged between neighbours of a spatial polygons data frame object
   #
   ##INPUTS:
-  #1) poly_sp
-  #2) list_nb
-  #3) num_cores
+  #1) poly_sp: spatial object with polygons (SpatialPolygonsDataFrame)
+  #2) list_nb: list of neighbours for the polygons/features, if NULL it is computed
+  #3) num_cores: number of cores used in the analysis
   #4) edges: if edges is TRUE keep spatialLines objects corresponding to share boundaries between polygons
-  #4) out_dir
-  #5) out_suffix
+  #4) out_dir: output directory
+  #5) out_suffix: output suffix added to all outputs
+  ##OUTPUTS
+  # object as list composed of the following items:
+  # 1) nb_combined_df: data.frame with length of shared neighours and neibhour ID
+  # 2) nb_combined_sp: shared neighbour objects (points or polygons)
+  #
   
   ####### Begin function ####
   
@@ -124,6 +144,34 @@ calculate_shared_boundaries_polygons <- function(poly_sp,poly_nb=NULL,edges=F,nu
                                  mc.preschedule=FALSE,
                                  mc.cores = num_cores)
   
+  
+  ### Format output
+  
+  #### First extract shared sp object
+  nb_combined_sp <- lapply(list_shared_nb_obj,function(x){x[[2]]})
+  names(nb_combined_sp) <- 1:no_poly
+  
+  #### Now reformat and combine all data.frame with length of shared boundaries
+  nb_combined_df <- lapply(list_shared_nb_obj,function(x){x[[1]]})
+  names(nb_combined_df) <- 1:no_poly
+  
+  nb_combined_df <- do.call(rbind,nb_combined_df)
+  nb_combined_df <- as.data.frame(nb_combined_df)
+  nb_combined_df$ref_id <- rownames(nb_combined_df)
+  
+  rownames(nb_combined_df) <- NULL
+  list_ref_id_tmp <- (strsplit(nb_combined_df$ref_id,"[.]")) #split is regexp so need bracket
+  nb_combined_df$ref_id <- unlist(lapply(list_ref_id_tmp,function(x){x[1]}))
+  
+  
+  shared_boundaries_obj <- list(nb_combined_df,nb_combined_sp)
+  names(shared_boundaries_obj) <- c("nb_combined_df","nb_combined_sp")
+  
+
+  #save the information for later use (validation at monthly step!!)
+  save(shared_boundaries_obj,file= file.path(out_dir,paste("shared_boundaries_obj",
+                                                           out_suffix,
+                                                           ".RData",sep="")))
   
   return(list_shared_nb_obj)
 }
