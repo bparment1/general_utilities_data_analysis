@@ -5,7 +5,7 @@
 #SBATCH --time=00:50:00                          # Time limit hrs:min:sec
 #SBATCH --output=shared_boundaries_test_%A_%a.out   # Standard output from console
 #SBATCH --error=shared_boundaries_test_%A_%a.err   # Error log 
-#SBATCH --partition=sesyncshared        # queue name, this is for debugging and testing
+#SBATCH --partition=sesynctest        # queue name, this is for debugging and testing
 
 pwd; hostname; date
 
@@ -15,4 +15,4 @@ echo "Running shared boundaries code for testing"
 INFILE_NAME=sids.shp
 export INFILE_NAME
 
-Rscript --vanilla /nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/scripts/shared_length_and_perimeters_polygons_06092017.R
+Rscript --vanilla /nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/scripts/shared_length_and_perimeters_polygons_06202017.R
