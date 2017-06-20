@@ -2,7 +2,7 @@
 ## Calculating shared length of boudaries of neighbors. This is useful for spatial analysis.
 ## 
 ## DATE CREATED: 05/30/2017
-## DATE MODIFIED: 06/09/2017
+## DATE MODIFIED: 06/20/2017
 ## AUTHORS: Benoit Parmentier 
 ## Version: 1
 ## PROJECT: Urbanization impact on biodiversity
@@ -39,7 +39,7 @@ library(ggplot2)
 
 ###### Functions used in this script
 
-function_neighbors_calculations <- "shared_length_and_perimeters_polygons_functions_06072017.R" #PARAM 1
+function_neighbors_calculations <- "shared_length_and_perimeters_polygons_functions_06202017.R" #PARAM 1
 script_path <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/scripts" #path to script #PARAM 
 
 source(file.path(script_path,function_neighbors_calculations)) #source all functions used in this script 1.
@@ -83,7 +83,7 @@ out_dir <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiver
 #ARGS 6
 create_out_dir_param=TRUE #create a new ouput dir if TRUE
 #ARGS 7
-out_suffix <- "urbanization_effects_biodiversity_06092017"
+out_suffix <- "urbanization_effects_biodiversity_06202017"
 
 ################# START SCRIPT ###############################
 
@@ -105,13 +105,17 @@ if(create_out_dir_param==TRUE){
   setwd(out_dir) #use previoulsy defined directory
 }
 
+if(is.null(num_cores)){
+  num_cores<- detectCores()
+}
+
 ## Step 1: read in the data and generate time stamps
 
 poly_sp <- readOGR(in_dir,sub(".shp","",infile_name))
 #plot(wwf_sp)
 
-test_poly <- poly_sp@polygons[[1]] #show first polygons 
-test_poly
+#test_poly <- poly_sp@polygons[[1]] #show first polygons 
+#test_poly
 #list_nb_wwf <- poly2nb(wwf_sp)
 
 ### let's first test on North Carolina data
@@ -129,8 +133,18 @@ test_poly
 #nc_nb[[11]]
 
 
-#debug(calculate_shared_boundaries_polygons)
+### set up log file
+if(file.exists("running_code.txt")){
+  file.remove("running_code.txt")
+}
 
+sink("running_code.txt",append=TRUE,split=TRUE) #append to file and print to console
+print(paste0("Computing shared boundaries using ",function_neighbors_calculations))
+print(paste0("On ",date()))
+sink()
+
+
+#debug(calculate_shared_boundaries_polygons)
 
 test_shared_boundaries <- calculate_shared_boundaries_polygons(poly_sp=poly_sp,
                                                                poly_nb=NULL,
