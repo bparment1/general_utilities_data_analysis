@@ -3,11 +3,11 @@
 ## Calculating shared length of boudaries of neighbors. This is useful for spatial analysis.
 ## 
 ## DATE CREATED: 06/02/2017
-## DATE MODIFIED: 06/13/2017
+## DATE MODIFIED: 06/20/2017
 ## AUTHORS: Benoit Parmentier 
 ## Version: 1
 ## PROJECT: Urbanization impact on biodiversity
-## ISSUE: 
+## ISSUE: Support #22140
 ## TO DO:
 ##
 ## COMMIT: modifying outputs to save object for cluster run + documentation
@@ -105,6 +105,12 @@ calculate_shared_length <- function(i,poly_sp,poly_nb){
   list_nb_sp <- lapply(list_lines_shared,function(x){x[[2]]})
   
   shared_nb_obj <- list(nb_df=nb_df,list_nb_sp=list_nb_sp)
+  
+  sink("running_code.txt",append=TRUE,split=TRUE)
+  #ls -lsink("myfile.txt", append=TRUE, split=TRUE) 
+  print(paste0("processed polygon number: ",i))
+  sink()
+  
   return(shared_nb_obj)
 }
 
@@ -129,6 +135,8 @@ calculate_shared_boundaries_polygons <- function(poly_sp,poly_nb=NULL,edges=F,nu
   
   if(is.null(poly_nb)){
     poly_nb <- poly2nb(poly_sp)
+    write.nb.gal(poly_nb,
+                 file=file.path(out_dir,paste0("poly_nb_",out_suffix,".gal")))
   }
   
   #debug(calculate_shared_length)
@@ -137,6 +145,11 @@ calculate_shared_boundaries_polygons <- function(poly_sp,poly_nb=NULL,edges=F,nu
   #                                             poly_nb = poly_nb )
   
   no_poly <- length(poly_sp) #number of polygons features in the dataset
+  
+  sink("running_code.txt",append=TRUE,split=TRUE) #append to file and print to console
+  print(paste0("Processing shared boundaries for ",no_poly," polygons"))
+  sink()
+  
   list_shared_nb_obj <- mclapply(1:no_poly,
                                  FUN=calculate_shared_length,
                                  poly_sp = poly_sp,
