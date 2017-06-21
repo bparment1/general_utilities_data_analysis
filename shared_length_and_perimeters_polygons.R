@@ -2,7 +2,7 @@
 ## Calculating shared length of boudaries of neighbors. This is useful for spatial analysis.
 ## 
 ## DATE CREATED: 05/30/2017
-## DATE MODIFIED: 06/20/2017
+## DATE MODIFIED: 06/21/2017
 ## AUTHORS: Benoit Parmentier 
 ## Version: 1
 ## PROJECT: Urbanization impact on biodiversity
@@ -39,7 +39,7 @@ library(ggplot2)
 
 ###### Functions used in this script
 
-function_neighbors_calculations <- "shared_length_and_perimeters_polygons_functions_06202017.R" #PARAM 1
+function_neighbors_calculations <- "shared_length_and_perimeters_polygons_functions_06212017.R" #PARAM 1
 script_path <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/scripts" #path to script #PARAM 
 
 source(file.path(script_path,function_neighbors_calculations)) #source all functions used in this script 1.
@@ -73,7 +73,7 @@ in_dir <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodivers
 #infile_name <- "Biomes_disolv.shp"
 #infile_name <- "sids.shp"
 INFILE_NAME <- Sys.getenv('INFILE_NAME')
-infile_name <- as.character(INFILE_NAME)
+
 #ARGS 3
 num_cores <- 8
 #ARGS 4
@@ -83,7 +83,10 @@ out_dir <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiver
 #ARGS 6
 create_out_dir_param=TRUE #create a new ouput dir if TRUE
 #ARGS 7
-out_suffix <- "urbanization_effects_biodiversity_06202017"
+#out_suffix <- "urbanization_effects_biodiversity_06212017"
+OUT_SUFFIX <- Sys.getenv('OUT_SUFFIX')
+infile_name <- as.character(INFILE_NAME)
+out_suffix <- as.character(OUT_SUFFIX)
 
 ################# START SCRIPT ###############################
 
@@ -113,7 +116,7 @@ if(is.null(num_cores)){
 
 poly_sp <- readOGR(in_dir,sub(".shp","",infile_name))
 #plot(wwf_sp)
-
+#poly_nb <- read.gal("poly_nb_urbanization_effects_biodiversity_06212017.gal")
 #test_poly <- poly_sp@polygons[[1]] #show first polygons 
 #test_poly
 #list_nb_wwf <- poly2nb(wwf_sp)
@@ -145,6 +148,12 @@ sink()
 
 
 #debug(calculate_shared_boundaries_polygons)
+#calculate_shared_boundaries_polygons(poly_sp=poly_sp,
+#                                     poly_nb=poly_nb,
+#                                     edges=T,
+#                                     num_cores=num_cores,
+#                                     out_dir=out_dir,
+#                                     out_suffix= out_suffix)
 
 test_shared_boundaries <- calculate_shared_boundaries_polygons(poly_sp=poly_sp,
                                                                poly_nb=NULL,
@@ -155,5 +164,5 @@ test_shared_boundaries <- calculate_shared_boundaries_polygons(poly_sp=poly_sp,
 
 
 
-################## END OF SCRIPT #########################
+############################## END OF SCRIPT #############################################
 
