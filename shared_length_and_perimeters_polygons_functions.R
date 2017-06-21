@@ -3,7 +3,7 @@
 ## Calculating shared length of boudaries of neighbors. This is useful for spatial analysis.
 ## 
 ## DATE CREATED: 06/02/2017
-## DATE MODIFIED: 06/20/2017
+## DATE MODIFIED: 06/21/2017
 ## AUTHORS: Benoit Parmentier 
 ## Version: 1
 ## PROJECT: Urbanization impact on biodiversity
@@ -54,6 +54,14 @@ intersect_poly_length_fun <- function(poly_sp1,poly_sp2){
     length_val <- 0
   }
   
+  #if contains both points and polygons!!! (because of multiple polygons)
+  if(inherits(intersection_sp,"SpatialCollections")){
+    #slot(intersection_sp, "pointobj")
+    line_sp_intersect <- slot(intersection_sp, "lineobj")
+    length_val <- SpatialLinesLengths(line_sp_intersect)
+  }
+
+  
   ### Add overlap if polygon
   #length_val <- NA
   #area_val <- ...
@@ -88,8 +96,18 @@ calculate_shared_length <- function(i,poly_sp,poly_nb){
   
   #debug(interesect_poly_length_fun)
   
-  list_lines_shared <- lapply(list_polygons_neighbors,FUN=intersect_poly_length_fun,poly_sp2=poly_sp_ref_selected)
+  #list_lines_shared <- lapply(list_polygons_neighbors,FUN=intersect_poly_length_fun,poly_sp2=poly_sp_ref_selected)
+  #capture the error in mclappply but only use one core
+  list_lines_shared <- mclapply(list_polygons_neighbors,
+                                FUN=intersect_poly_length_fun,
+                                poly_sp2=poly_sp_ref_selected,
+                                mc.preschedule=FALSE,
+                                mc.cores = 1)
+  #debug(intersect_poly_length_fun)
+  #test_lines_shared <- intersect_poly_length_fun(list_polygons_neighbors[[2]],
+  #                              poly_sp2=poly_sp_ref_selected)
   #browser()
+
   
   #list_lines_shared
   
@@ -156,7 +174,8 @@ calculate_shared_boundaries_polygons <- function(poly_sp,poly_nb=NULL,edges=F,nu
                                  poly_nb = poly_nb,
                                  mc.preschedule=FALSE,
                                  mc.cores = num_cores)
-  
+  #debug(calculate_shared_length)
+  #test<- calculate_shared_length(8,poly_sp,poly_nb)
   
   ### Format output
   
