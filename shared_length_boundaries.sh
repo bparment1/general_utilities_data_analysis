@@ -2,10 +2,10 @@
 #SBATCH --job-name=shared_boundaries_test    # Job name
 #SBATCH --mail-type=ALL                          # Mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --mail-user=bparmentier@sesync.org       # Where to send mail
-#SBATCH --time=01:00:00                          # Time limit hrs:min:sec
+#SBATCH --time=10:00:00                          # Time limit hrs:min:sec
 #SBATCH --output=shared_boundaries_test_%A_%a.out   # Standard output from console
 #SBATCH --error=shared_boundaries_test_%A_%a.err   # Error log 
-#SBATCH --partition=sesynctest        # queue name, this is for debugging and testing
+#SBATCH --partition=sesyncshared        # queue name, this is for debugging and testing
 
 pwd; hostname; date
 
