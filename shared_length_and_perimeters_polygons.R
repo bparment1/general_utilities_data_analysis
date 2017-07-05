@@ -2,7 +2,7 @@
 ## Calculating shared length of boudaries of neighbors. This is useful for spatial analysis.
 ## 
 ## DATE CREATED: 05/30/2017
-## DATE MODIFIED: 06/21/2017
+## DATE MODIFIED: 07/05/2017
 ## AUTHORS: Benoit Parmentier 
 ## Version: 1
 ## PROJECT: Urbanization impact on biodiversity
@@ -39,7 +39,7 @@ library(ggplot2)
 
 ###### Functions used in this script
 
-function_neighbors_calculations <- "shared_length_and_perimeters_polygons_functions_06212017.R" #PARAM 1
+function_neighbors_calculations <- "shared_length_and_perimeters_polygons_functions_07052017.R" #PARAM 1
 script_path <- "/nfs/bparmentier-data/Data/projects/urbanization_effects_on_biodiversity/scripts" #path to script #PARAM 
 
 source(file.path(script_path,function_neighbors_calculations)) #source all functions used in this script 1.
@@ -116,7 +116,7 @@ if(is.null(num_cores)){
 
 poly_sp <- readOGR(in_dir,sub(".shp","",infile_name))
 #plot(wwf_sp)
-#poly_nb <- read.gal("poly_nb_urbanization_effects_biodiversity_06212017.gal")
+#poly_nb <- read.gal("poly_nb_urbanization_effects_biodiversity_07052017.gal")
 #test_poly <- poly_sp@polygons[[1]] #show first polygons 
 #test_poly
 #list_nb_wwf <- poly2nb(wwf_sp)
