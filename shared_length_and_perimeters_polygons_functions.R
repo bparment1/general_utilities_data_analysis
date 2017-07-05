@@ -3,7 +3,7 @@
 ## Calculating shared length of boudaries of neighbors. This is useful for spatial analysis.
 ## 
 ## DATE CREATED: 06/02/2017
-## DATE MODIFIED: 06/21/2017
+## DATE MODIFIED: 07/05/2017
 ## AUTHORS: Benoit Parmentier 
 ## Version: 1
 ## PROJECT: Urbanization impact on biodiversity
@@ -42,6 +42,12 @@ library(ggplot2)
 
 intersect_poly_length_fun <- function(poly_sp1,poly_sp2){
   #Intersects two polygons and returns the shared boundary and length
+  #If object is a SpatialCollections, length of shared border is based only on SpatialLines objects.
+  #since SpatialPoints have zero length.
+  #
+  # AUTHORS : Benoit Parmentier
+  # CREATED : 06/02/2017
+  # MODIFIED: 07/05/2017
   #
   ## To do add option for overlap? if polygons
   
@@ -59,6 +65,9 @@ intersect_poly_length_fun <- function(poly_sp1,poly_sp2){
     #slot(intersection_sp, "pointobj")
     line_sp_intersect <- slot(intersection_sp, "lineobj")
     length_val <- SpatialLinesLengths(line_sp_intersect)
+    if(length(length_val)>1){
+      length_val<- sum(length_val) #may be stored in multiple separate line objects!!!
+    }
   }
 
   
@@ -177,6 +186,13 @@ calculate_shared_boundaries_polygons <- function(poly_sp,poly_nb=NULL,edges=F,nu
   #debug(calculate_shared_length)
   #test<- calculate_shared_length(8,poly_sp,poly_nb)
   
+  ## Debugging here
+  #save the information for later use (validation at monthly step!!)
+  save(list_shared_nb_obj,file= file.path(out_dir,paste("list_shared_nb_obj_",
+                                                           out_suffix,
+                                                           ".RData",sep="")))
+  
+  #list_shared_nb_obj <- load_obj(file.path(out_dir,"list_shared_nb_obj_urbanization_effects_biodiversity_07052017.RData"))
   ### Format output
   
   #### First extract shared sp object
@@ -201,7 +217,7 @@ calculate_shared_boundaries_polygons <- function(poly_sp,poly_nb=NULL,edges=F,nu
   
 
   #save the information for later use (validation at monthly step!!)
-  save(shared_boundaries_obj,file= file.path(out_dir,paste("shared_boundaries_obj",
+  save(shared_boundaries_obj,file= file.path(out_dir,paste("shared_boundaries_obj_",
                                                            out_suffix,
                                                            ".RData",sep="")))
   
