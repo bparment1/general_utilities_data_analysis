@@ -1,16 +1,17 @@
-############### SESYNC Research Support: Light ocean environment ########## 
-## Importing and processing data from survey for the fisheries project at SESYNC.
+############### SESYNC Research Support: ocean colors datasets for environmental applications ########## 
+## Importing and processing data from MODIS for an application.
 ## 
 ## DATE CREATED: 06/06/2017
 ## DATE MODIFIED: 10/12/2017
 ## AUTHORS: Benoit Parmentier 
-## PROJECT: Garden Wealth (urban garden)
+## PROJECT: Ocean colors data
 ## ISSUE: 
 ## TO DO:
 ##
-## COMMIT: initial commit gDistance example
+## COMMIT: initial commit 
 ##
 ## Links to investigate:
+## https://oceandata.sci.gsfc.nasa.gov/MODIS-Terra/Mapped/Monthly/4km/bb/
 
 ###################################################
 #
@@ -35,10 +36,8 @@ library(colorRamps)                          # Palette/color ramps for symbology
 library(ggplot2)
 library(lubridate)
 library(dplyr)
-library(rowr)                                # Contains cbind.fill
 library(car)
 library(sf)
-library(gdistance)
 
 ###### Functions used in this script and sourced from other files
 
@@ -65,19 +64,19 @@ load_obj <- function(f){
 ### Other functions ####
 
 #function_processing_data <- ".R" #PARAM 1
-#script_path <- "/nfs/bparmentier-data/Data/projects/urban_garden_pursuit/scripts" #path to script #PARAM 
+#script_path <- "/nfs/bparmentier-data/Data/projects/ocean_colors_data/scripts" #path to script #PARAM 
 #source(file.path(script_path,function_processing_data)) #source all functions used in this script 1.
 
 ############################################################################
 #####  Parameters and argument set up ###########
 
-in_dir <- "/nfs/bparmentier-data/Data/projects/urban_garden_pursuit/data" #local bpy50 , param 1
-out_dir <- "/nfs/bparmentier-data/Data/projects/urban_garden_pursuit/outputs" #param 2
+in_dir <- "/nfs/bparmentier-data/Data/projects/ocean_colors_data/data" #local bpy50 , param 1
+out_dir <- "/nfs/bparmentier-data/Data/projects/ocean_colors_data/outputs" #param 2
 
 num_cores <- 2 #param 8
 create_out_dir_param=TRUE # param 9
 
-out_suffix <-"connectivity_example_10122017" #output suffix for the files and ouptut folder #param 12
+out_suffix <-"ocean_colors_example_11022017" #output suffix for the files and ouptut folder #param 12
 
 ############## START SCRIPT ############################
 
@@ -101,35 +100,11 @@ if(create_out_dir_param==TRUE){
 #set up the working directory
 #Create output directory
 
-lf_dir <- list.files(in_dir,full.names=T) #this is the list of folder with RAW data information
+## band backscattering
+lf_bb <- list.files(path=in_dir,
+                    pattern="*.bb.*",
+                    full.names=T) #this is the list of folder with RAW data information
 
-set.seed(123)
-r <- raster(ncol=3,nrow=3)
-r[] <- 1:ncell(r)
-r
-plot(r)
 
-r[] <- 1
-tr1 <- transition(r,transitionFunction = mean,directions=8)
 
-tr1
-plot(tr1)
-
-r2 <- r
-r2[] <- runif(9)
-ncf <- function(x){max(x) - x[1] + x[2]}
-tr2 <- transition(r2,ncf,4,symm=FALSE)
-
-transitionMatrix(tr2)
-tr2
-image(transitionMatrix(tr2))
-
-tr1 # with dsCMatrix object (symmetric)
-tr2 # with dgCMatrix object (asymmetric)
-
-tr3 <- tr1*tr2
-tr3 <- tr1+tr2
-tr3 <- tr1*3
-tr3 <- sqrt(tr1)
-
-image(transitionMatrix(tr3))
+####################### END OF SCRIPT ###########################################
