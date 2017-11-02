@@ -8,7 +8,7 @@
 ## ISSUE: 
 ## TO DO:
 ##
-## COMMIT: loading nc ocean color data with raster R 
+## COMMIT: generating profiles: temporal and spatials 
 ##
 ## Links to investigate:
 ## backscattering bands: https://oceandata.sci.gsfc.nasa.gov/MODIS-Terra/Mapped/Monthly/4km/bb/
@@ -120,24 +120,44 @@ r_stack_rrs <- stack(lf_rrs)
 plot(r_stack_rrs,y=1)
 
 NAvalue(r_stack_rrs) #find out NA values
-animate(r_stack_rrs) #generate animation for specific bands
 
-## Kd 490 
+## Kd 490nm attenuation
 
-T20000322000060.L3m_MO_KD490_Kd_490_4km.nc
+#e.g.: T20000322000060.L3m_MO_KD490_Kd_490_4km.nc
 
-## band backscattering
 lf_kd <- list.files(path=in_dir,
                      pattern="*.Kd.*",
                      full.names=T) #this is the list of folder with RAW data information
 
 r_stack_kd <- stack(lf_kd)
-plot(r_stack_KD,y=1)
+plot(r_stack_kd,y=1)
 
-NAvalue(r_stack_rrs) #find out NA values
-animate(r_stack_rrs) #generate animation for specific bands
+NAvalue(r_stack_kd) #find out NA values
+animate(r_stack_kd) #generate animation for specific bands
 
-### create spectral profile for specific location
+### create temporal profile for specific location using monthly kd data from 2000 and 2001
 
+geog_loc <- c(-100,-10) #longitude and latitude, South America coast
 
-####################### END OF SCRIPT ###########################################
+geog_loc_mat <- matrix(geog_loc,nrow=1,ncol=2)
+kd_df <- extract(r_stack_kd,geog_loc_mat)
+plot(kd_df[1,],type="b")
+
+### create spectral profile for specific location using monthly kd data from 2000 and 2001
+
+rrs_df <- extract(r_stack_rrs,geog_loc_mat)
+
+bands_names<- names(r_stack_rrs)
+bands_char<- strsplit(bands_names,"[.]")
+bands_labels <- unlist(lapply(bands_char,function(x){x[5]})) #get band values in nm
+
+plot(rrs_df[1,],type="b",xaxt="n",xlab="reflectance band (nm)",ylab="Reflectance value")
+axis(side=1, at=1:10, labels=bands_labels,las=2) # pos=, lty=, col=, las=, tck=, ...)
+title("MODIS Terra Reflectance: Ocean color product")
+
+pt_sf <- st_point(geog_loc)
+plot(r_stack_rrs,y=1,
+     main="location of extracted point")
+plot(pt_sf,add=T)
+
+####################### END OF SCRIPT ##################################################
