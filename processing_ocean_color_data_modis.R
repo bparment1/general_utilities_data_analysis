@@ -1,17 +1,18 @@
 ############### SESYNC Research Support: ocean colors datasets for environmental applications ########## 
-## Importing and processing data from MODIS for an application.
+## Importing and processing data about the water/ocean from MODIS sensor.
 ## 
-## DATE CREATED: 06/06/2017
-## DATE MODIFIED: 10/12/2017
+## DATE CREATED: 11/01/2017
+## DATE MODIFIED: 11/02/2017
 ## AUTHORS: Benoit Parmentier 
 ## PROJECT: Ocean colors data
 ## ISSUE: 
 ## TO DO:
 ##
-## COMMIT: initial commit 
+## COMMIT: loading nc ocean color data with raster R 
 ##
 ## Links to investigate:
-## https://oceandata.sci.gsfc.nasa.gov/MODIS-Terra/Mapped/Monthly/4km/bb/
+## backscattering bands: https://oceandata.sci.gsfc.nasa.gov/MODIS-Terra/Mapped/Monthly/4km/bb/
+## refleance bands: https://oceandata.sci.gsfc.nasa.gov/MODIS-Terra/Mapped/Monthly/4km/Rrs/
 
 ###################################################
 #
@@ -105,6 +106,38 @@ lf_bb <- list.files(path=in_dir,
                     pattern="*.bb.*",
                     full.names=T) #this is the list of folder with RAW data information
 
+r_stack_bb <- stack(lf_bb)
+plot(r_stack_bb,y=1)
+
+## Remote Sensing reflectance 
+
+## band backscattering
+lf_rrs <- list.files(path=in_dir,
+                    pattern="*.RRS.*",
+                    full.names=T) #this is the list of folder with RAW data information
+
+r_stack_rrs <- stack(lf_rrs)
+plot(r_stack_rrs,y=1)
+
+NAvalue(r_stack_rrs) #find out NA values
+animate(r_stack_rrs) #generate animation for specific bands
+
+## Kd 490 
+
+T20000322000060.L3m_MO_KD490_Kd_490_4km.nc
+
+## band backscattering
+lf_kd <- list.files(path=in_dir,
+                     pattern="*.Kd.*",
+                     full.names=T) #this is the list of folder with RAW data information
+
+r_stack_kd <- stack(lf_kd)
+plot(r_stack_KD,y=1)
+
+NAvalue(r_stack_rrs) #find out NA values
+animate(r_stack_rrs) #generate animation for specific bands
+
+### create spectral profile for specific location
 
 
 ####################### END OF SCRIPT ###########################################
