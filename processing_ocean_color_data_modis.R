@@ -1,6 +1,13 @@
 ############### SESYNC Research Support: ocean colors datasets for environmental applications ########## 
 ## Importing and processing data about the water/ocean from MODIS sensor.
-## 
+## This is an example with Lake Malawi as a studya area.
+##
+## Data were downloaded from EARTHDATA NASA.
+## https://oceandata.sci.gsfc.nasa.gov/MODIS-Terra/Mapped/Monthly/4km/Kd/
+## An account is necessary if many files are downloaded.
+## The products were downloaded manually but it is possible to write a script to automatically
+## navigate the server directory structure and obtain the files.
+##
 ## DATE CREATED: 11/01/2017
 ## DATE MODIFIED: 11/03/2017
 ## AUTHORS: Benoit Parmentier 
@@ -8,10 +15,10 @@
 ## ISSUE: 
 ## TO DO:
 ##
-## COMMIT: generating profiles: temporal and spatials 
+## COMMIT: cleaning and producing example dataset 
 ##
 ## Links to investigate:
-## backscattering bands: https://oceandata.sci.gsfc.nasa.gov/MODIS-Terra/Mapped/Monthly/4km/bb/
+## Kd product: https://oceandata.sci.gsfc.nasa.gov/MODIS-Terra/Mapped/Monthly/4km/Kd/
 ## refleance bands: https://oceandata.sci.gsfc.nasa.gov/MODIS-Terra/Mapped/Monthly/4km/Rrs/
 
 ###################################################
@@ -77,7 +84,7 @@ out_dir <- "/nfs/bparmentier-data/Data/projects/ocean_colors_data/outputs" #para
 num_cores <- 2 #param 8
 create_out_dir_param=TRUE # param 9
 
-out_suffix <-"ocean_colors_example_11022017" #output suffix for the files and ouptut folder #param 12
+out_suffix <-"ocean_colors_example_11032017" #output suffix for the files and ouptut folder #param 12
 
 #Region study area from http://www.masdap.mw/layers/geonode%3Amalawi_lake
 infile_reg_outline <- "malawi_lake.shp" #study area
@@ -116,11 +123,12 @@ lf_rrs <- list.files(path=in_dir,
                     pattern="*.RRS.*",
                     full.names=T) #this is the list of folder with RAW data information
 
-r_stack_rrs <- stack(lf_rrs)
+r_stack_rrs <- stack(lf_rrs) #create a stack of raster images
 #Composite reflectance from 2001001 to 2001031 (January 2001)
-plot(r_stack_rrs,y=1)
+plot(r_stack_rrs,y=1) # plot the first image from the raster stack object
 
 NAvalue(r_stack_rrs) #find out NA values
+dataType(r_stack_rrs) #find out the data type, here FLT4S
 
 ## Kd 490nm attenuation
 
@@ -131,7 +139,7 @@ lf_kd <- list.files(path=in_dir,
                      pattern="*.Kd.*",
                      full.names=T) #this is the list of folder with RAW data information
 
-r_stack_kd <- stack(lf_kd)
+r_stack_kd <- stack(lf_kd) #stack of Kd
 plot(r_stack_kd,y=1)
 
 #######################
@@ -140,7 +148,7 @@ plot(r_stack_kd,y=1)
 ### Examine values across 12 months for 2001
 
 NAvalue(r_stack_kd) #find out NA values
-animate(r_stack_kd) #generate animation for specific bands/product
+#animate(r_stack_kd) #generate animation for specific bands/product
 
 ### create temporal profile for specific location using monthly kd data for 2001 (monthly)
 
@@ -182,7 +190,7 @@ reg_sp <- as(reg_sf,"Spatial") # convert to Spatial object
 r_kd_malawi <- crop(r_stack_kd,reg_sp) #Crop raster stack using region's extent
 plot(r_kd_malawi,y=1:12) #Take a look at the time series for the variable of interest (kd here)
 
-malawi_mean_df <- extract(r_stack_kd,reg_sp,fun=mean,df=T) # Extract the average for the area of interest
+malawi_mean_df <- extract(r_stack_kd,reg_sp,fun=mean,df=T,na.rm=T) # Extract the average for the area of interest
 plot(malawi_mean_df[1,],type="b")
 
 ### Save data in multiple format:
@@ -197,17 +205,26 @@ writeRaster(r_kd_malawi,
             
 #Write out cropped data as shapefile and textfile
 
-rasterToPoints(x, fun=NULL, spatial=FALSE, ...)
 malawi_data_sp <- rasterToPoints(r_kd_malawi,spatial=T) #sp points object
 dim(malawi_data_sp)
-<- as(malawi_data_sp,"sf")
-writeOGR()
+
+outfile <- paste0("study_area_values_pixels_",out_suffix)
+writeOGR(malawi_data_sp,dsn= ".",layer= outfile, driver="ESRI Shapefile",overwrite_layer=TRUE)
+
+### Use the new sf package to write out:
+malawi_data_sf <- as(malawi_data_sp,"sf")
+outfile_sf <- paste0("study_area_sf_values_pixels_",out_suffix)
+
+st_write(malawi_data_sf,
+         file.path(out_dir,outfile_sf),
+         driver="ESRI Shapefile")
 
 malawi_data_df <- as.data.frame(malawi_data_sp)
-dim(malawi_data_df)
+dim(malawi_data_df) # note x, y column added!!
 
 out_filename_df <- paste0("study_area_values_pixels_",out_suffix,".txt")
 write.table(malawi_data_df,
-            file.path(out_dir,out_filename_df))
+            file.path(out_dir,out_filename_df),
+            sep=",")
 
 ####################### END OF SCRIPT ##################################################
