@@ -3,9 +3,10 @@
 ##    This script goal is to merge spatial weights in spdep
 ##    ultimately the goal is to have weigths where:
 ##    each front yard (which has a parcel id, we can join back to parcel),
-##    neighbors a) all other front yards on the same street segment, b)
-##    neighbors all other front yards in that same block group, and c)
-##    neighbors parcels on eigther side [queen contiguity] and parcels across
+##     
+##    a)  neighbors all other front yards on the same street segment, 
+##    b)  neighbors all other front yards in that same block group, and
+##    c)  neighbors parcels on eigther side [queen contiguity] and parcels across
 ##    the street based on distances derived from road widths
 
 ## DATE CREATED: 0x/03/2018
@@ -150,30 +151,38 @@ list.files(path=file.path(in_dir,"analysisShapes"))
 system.time(sf <- st_read(file.path(in_dir,in_filename), quiet = F))
 
 a <- object.size(sf); print(a, units='Mb')
+dim(sf) #360846
+#View(sf)
+#assume that YARD_ID is unique?
 
+sf_orig <- sf
 # roads - not really needed
 #system.time(rds <- st_read('GIS/analysisShapes/roads_ply.shp', quiet = F))
-a <- object.size(rds); print(a, units='Mb'); rm(a)
+#a <- object.size(rds); print(a, units='Mb'); rm(a)
 
 # filter down
 sf   <- sf %>% filter(sample == 2) #yards
 #rds  <- rds%>% filter(sample == 2) #roads
+dim(sf)
+length(unique(sf$YARD_ID)) #OK unique
 
 # make an sp version of shp (ie not a simple feature), then map it
 sp <- as(sf, "Spatial"); class(sp)
 #rd <- as(rds,"Spatial"); class(rd)
-par(mar=c(0,0,0,0), mfrow=c(1,2)); plot(sp); plot(rd)
+par(mar=c(0,0,0,0), mfrow=c(1,2)); plot(sp)#; plot(rd)
 
 # filter down again to just front yards
 spFront <- sp[sp$YARD == 'Front', ];dim(spFront); dim(sp)/2 #0 
 
 head(sf)
+dim(sf)
 plot(sf['YARD'])
 #plot(st_centroid(sf)['YARD'])
 #plot(st_centroid(rds)['STREET_NAM'])
 
 # web map with centoids of yards
-mapview(sf, zcol='YARD') + mapview(st_geometry(st_centroid(sf))) + mapview(rds['STREET_NAM'])
+mapview(sf, zcol='YARD') + mapview(st_geometry(st_centroid(sf))) 
+#+ mapview(rds['STREET_NAM'])
 
 # view the sp vesion of the subest
 par(mar=c(0,0,5,0), mfrow=c(1,4))
@@ -270,20 +279,12 @@ image(as(nb2listw(nb_knn1, zero.policy=TRUE), "CsparseMatrix"))
 # example of aggregating nbs
 # on queen and one K = 4
 
-
-
-
-
-
-
 knn <- knn2nb(knearneigh(cents, k = 4)); summary(knn)
 dnn <- dnearneigh(cents, d1=0, d2=100); summary(dnn)
 
 plot(cents)
 
 nb <- aggregate.nb(knn, dnn)
-
-
 
 nb <- poly2nb(rd, row.names = rd$street_n_1, queen=TRUE); summary(nb)
 #image(as(nb2listw(nb, style="B"), "CsparseMatrix"))
@@ -403,3 +404,4 @@ if(FALSE){
 
 
 
+################################ End of script ############################
