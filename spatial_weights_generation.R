@@ -8,9 +8,13 @@
 ##    b)  neighbors all other front yards in that same block group, and
 ##    c)  neighbors parcels on eigther side [queen contiguity] and parcels across
 ##    the street based on distances derived from road widths
-
+##
+##  The goal is to generate three hierachical levels of the neighborhood structure
+##  for the spatial regression.
+##
+##
 ## DATE CREATED: 0x/03/2018
-## DATE MODIFIED: 08/09/2018
+## DATE MODIFIED: 08/10/2018
 ## AUTHORS: Dexter Locke, modified by Benoit Parmentier  
 ## Version: 1
 ## PROJECT: Neighborhood Desirability
@@ -200,7 +204,8 @@ plot(cents, main="Front Yard Centroids")
 
 # viz
 plot(spFront, main='Front Yards in same \nblock group are neighbors')
-unique(cents$ID_CBG)               # n = 2
+i<- unique(cents$ID_CBG)[1]               # n = 2
+
 for(i in unique(cents$ID_CBG)){    # can replace "ID_CBG" with street segment later on
      print(i)
      
@@ -209,11 +214,18 @@ for(i in unique(cents$ID_CBG)){    # can replace "ID_CBG" with street segment la
      # knn2nb doesn't allow for that, but the point is to make all grouped
      # features neighbors.
      #    dnearneigh does have a row.names argument for IDs, potential alternative
+     
+     dim(cents[cents$'ID_CBG' == i,])[1] -1 #this 341 elements
+     ?knearneigh
+     
+     test <- knearneigh(cents[cents$'ID_CBG' == i,],
+             k = dim(cents[cents$'ID_CBG' == i,])[1] - 1)
+     
      nb_all <- knn2nb(knearneigh(cents[cents$'ID_CBG' == i,],
-                                  k = dim(cents[cents$'ID_CBG' == i,])[1] - 1))
+                                 k = dim(cents[cents$'ID_CBG' == i,])[1] - 1))
      print(nb_all)
      plot(nb_all, coordinates(cents[cents$'ID_CBG' == i,]),
-          add=T, col='blue',  lwd=.5, pch="*") # add the network
+          add=T, col='blue',  lwd=.5, pch="*") # add the network   
      
 }
 
