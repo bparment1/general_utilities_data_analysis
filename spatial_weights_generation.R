@@ -206,7 +206,12 @@ plot(cents, main="Front Yard Centroids")
 plot(spFront, main='Front Yards in same \nblock group are neighbors')
 i<- unique(cents$ID_CBG)[1]               # n = 2
 
-for(i in unique(cents$ID_CBG)){    # can replace "ID_CBG" with street segment later on
+### Make this a function that you can use with lapply or mclapply
+ID_var_name <- "ID_CBG"
+n_features <- unique(cents[[ID_var_name]])
+ref_id_var_name <- "" #reference global ID
+
+for(i in n_features){    # can replace "ID_CBG" with street segment later on
      print(i)
      
      # make all fronts in the same ID_CBG neighbors
@@ -218,9 +223,20 @@ for(i in unique(cents$ID_CBG)){    # can replace "ID_CBG" with street segment la
      dim(cents[cents$'ID_CBG' == i,])[1] -1 #this 341 elements
      ?knearneigh
      
-     test <- knearneigh(cents[cents$'ID_CBG' == i,],
-             k = dim(cents[cents$'ID_CBG' == i,])[1] - 1)
+     selected_parcels <- cents[cents$'ID_CBG' == i,]
+     dim(selected_parcels)
+     selected_parcels <- cents[cents[[ID_var_name]] == i,]
      
+     k = dim(cents[cents$'ID_CBG' == i,])[1] - 1
+     
+     test <- knearneigh(selected_parcels,
+                          k= nrow(selected_parcels)-1)
+     test$np
+     test$nn
+     
+     selected_parcels$ID_CBG
+     
+     test$nn
      nb_all <- knn2nb(knearneigh(cents[cents$'ID_CBG' == i,],
                                  k = dim(cents[cents$'ID_CBG' == i,])[1] - 1))
      print(nb_all)
