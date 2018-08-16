@@ -14,7 +14,7 @@
 ##
 ##
 ## DATE CREATED: 0x/03/2018
-## DATE MODIFIED: 08/10/2018
+## DATE MODIFIED: 08/16/2018
 ## AUTHORS: Dexter Locke, modified by Benoit Parmentier  
 ## Version: 1
 ## PROJECT: Neighborhood Desirability
@@ -192,6 +192,8 @@ mapview(sf, zcol='YARD') + mapview(st_geometry(st_centroid(sf)))
 par(mar=c(0,0,5,0), mfrow=c(1,4))
 plot(spFront, main="Front Yards")
 
+### Why are you using a point?
+
 # loop through each block group (n=2 as a test, lster use street segment)
 # and make all parcels in that block group (or later that segment) neighs
 # but first get the front yard centroids
@@ -206,11 +208,13 @@ plot(cents, main="Front Yard Centroids")
 plot(spFront, main='Front Yards in same \nblock group are neighbors')
 i<- unique(cents$ID_CBG)[1]               # n = 2
 
+names(cents)
 ### Make this a function that you can use with lapply or mclapply
 ID_var_name <- "ID_CBG"
 n_features <- unique(cents[[ID_var_name]])
-ref_id_var_name <- "" #reference global ID
+#ref_id_var_name <- "" #reference global ID
 
+i <- n_features[1]
 for(i in n_features){    # can replace "ID_CBG" with street segment later on
      print(i)
      
@@ -226,17 +230,27 @@ for(i in n_features){    # can replace "ID_CBG" with street segment later on
      selected_parcels <- cents[cents$'ID_CBG' == i,]
      dim(selected_parcels)
      selected_parcels <- cents[cents[[ID_var_name]] == i,]
+     row.names(selected_parcels)<- selected_parcels$YARD_ID
      
      k = dim(cents[cents$'ID_CBG' == i,])[1] - 1
      
      test <- knearneigh(selected_parcels,
                           k= nrow(selected_parcels)-1)
+     test <- knearneigh(selected_parcels,
+                        k= 2)
+     
      test$np
-     test$nn
+     
+     test$np
+     test$nn #closet number of 1 is 106
      
      selected_parcels$ID_CBG
      
-     test$nn
+     #?knn2nb
+     test <- knearneigh(selected_parcels,
+                        k= nrow(selected_parcels)-1)
+     nb_all <- knn2nb(test,row.names=test$YARD_ID)
+     #test$nn
      nb_all <- knn2nb(knearneigh(cents[cents$'ID_CBG' == i,],
                                  k = dim(cents[cents$'ID_CBG' == i,])[1] - 1))
      print(nb_all)
@@ -318,8 +332,6 @@ nb <- poly2nb(rd, row.names = rd$street_n_1, queen=TRUE); summary(nb)
 #image(as(nb2listw(nb, style="B"), "CsparseMatrix"))
 
 bnb <- nb2blocknb(nb, as.character(rd$group))
-
-
 
 plot(nb_F, coordinates(spFront), add=T, col="red",  lwd=.75, pch='.') # add the network
 
