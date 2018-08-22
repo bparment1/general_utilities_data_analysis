@@ -14,7 +14,7 @@
 ##
 ##
 ## DATE CREATED: 0x/03/2018
-## DATE MODIFIED: 08/16/2018
+## DATE MODIFIED: 08/22/2018
 ## AUTHORS: Dexter Locke, modified by Benoit Parmentier  
 ## Version: 1
 ## PROJECT: Neighborhood Desirability
@@ -214,6 +214,8 @@ ID_var_name <- "ID_CBG"
 n_features <- unique(cents[[ID_var_name]])
 #ref_id_var_name <- "" #reference global ID
 
+list_nb_all <- vector("list",length=length(n_features))
+
 i <- n_features[1]
 for(i in n_features){    # can replace "ID_CBG" with street segment later on
      print(i)
@@ -240,8 +242,6 @@ for(i in n_features){    # can replace "ID_CBG" with street segment later on
                         k= 2)
      
      test$np
-     
-     test$np
      test$nn #closet number of 1 is 106
      
      selected_parcels$ID_CBG
@@ -251,14 +251,44 @@ for(i in n_features){    # can replace "ID_CBG" with street segment later on
                         k= nrow(selected_parcels)-1)
      nb_all <- knn2nb(test,row.names=test$YARD_ID)
      #test$nn
-     nb_all <- knn2nb(knearneigh(cents[cents$'ID_CBG' == i,],
-                                 k = dim(cents[cents$'ID_CBG' == i,])[1] - 1))
+     #nb_all <- knn2nb(knearneigh(cents[cents$'ID_CBG' == i,],
+     #                             k = dim(cents[cents$'ID_CBG' == i,])[1] - 1))
      print(nb_all)
      plot(nb_all, coordinates(cents[cents$'ID_CBG' == i,]),
           add=T, col='blue',  lwd=.5, pch="*") # add the network   
      
+     list_nb_all[[i]]
 }
 
+##### Now aggregate the neighbours
+### Checking with example first to understand the aggregation process
+data(used.cars)
+data(state)
+cont_st <- match(attr(usa48.nb, "region.id"), state.abb)
+usa48.nb
+class(state.abb)
+attr(usa48.nb)
+str(usa48.nb)
+
+class(usa48.nb)
+plot(usa48.nb)
+
+cents <- as.matrix(as.data.frame(state.center))[cont_st,]
+opar <- par(mfrow=c(2,1))
+plot(usa48.nb, cents, xlim=c(-125, -65), ylim=c(25, 50))
+IDs <- as.character(state.division[cont_st])
+agg_cents <- aggregate(cents, list(IDs), mean) # coordinates with IDs
+class(agg_cents)
+class(IDs)
+
+dim(IDs)
+
+agg_nb <- aggregate(usa48.nb, IDs) # not useful in this case!!!!
+class(agg_nb)
+
+plot(agg_nb, agg_cents[, 2:3], xlim=c(-125, -65), ylim=c(25, 50))
+text(agg_cents[, 2:3], agg_cents[, 1], cex=0.6)
+par(opar)
 
 # now by street segment
 plot(spFront, main='Front Yards on same\nstreet segment\nare neighbors')
