@@ -16,6 +16,9 @@
 ## COMMIT: checking code
 ##
 
+## Very good reference:
+#http://rpsychologist.com/r-guide-longitudinal-lme-lmer
+
 ###################################################
 #
 
@@ -329,9 +332,15 @@ gls.fit.diff.var <-
                            maxIter = 1000000, msMaxIter = 1000000))
 summary(gls.fit.diff.var)
 
+http://rpsychologist.com/r-guide-longitudinal-lme-lmer
+
 ############
 library(lme)
 library(nlme)
+library(TSA)
+library(zoo)
+library(xts)
+
 
 data(Ovary)
 names(Ovary)
@@ -342,8 +351,31 @@ View(Ovary)
 plot(1:10)
 plot(Ovary)
 xyplot(follicles~Time|Mare,data=Ovary)
-mod <- lme(follicles~sin(2*pi*Time),
-                      data=Ovary,
-                      random=-1|Mare)
+
+## linear model
+
+mod1 <- lme(follicles~ Time,
+           random= ~1|Mare,
+           data=Ovary)
+
+#plot(ACF(mod1$residuals),alpha=0.05)
+plot(ACF(mod1),alpha=0.05)
+acf(mod1$residuals)
+pacf(mod1$residuals) #note that residuals have both fixed and random outputs
+
+mod1_lm4 <- lmer(follicles~ Time + 1|Mare,
+            data=Ovary)
+
+## model with cyclic behavior
+mod2 <- lme(follicles~sin(2*pi*Time)+cos(2*pi*Time),
+                      random= ~1|Mare,
+           data=Ovary)
+plot(ACF(mod2),alpha=0.05)
+
+## model with cyclic behavior
+mod3 <- lme(follicles ~ sin(2*pi*Time)+cos(2*pi*Time),
+            random= ~1|Mare,
+            data=Ovary)
+plot(ACF(mod3),alpha=0.05)
 
 ############################# End of script ###############################
