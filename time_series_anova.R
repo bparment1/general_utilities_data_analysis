@@ -1,3 +1,126 @@
+############### SESYNC Research Support: Time Series Anova ########## 
+##
+## Goal: test if time series are different from each other than could be attributed to chance alone. 
+## In other words, is time-series from location A different from the series at location B measured
+##during the same time? 
+##I have 142 locations and 8 measurements per unique location.
+##
+## DATE CREATED: 09/27/2018
+## DATE MODIFIED: 09/27/2018
+## AUTHORS: Dexter Locke, modified by Benoit Parmentier  
+## Version: 1
+## PROJECT: Time series ANOVA
+## ISSUE: 
+## TO DO:
+##
+## COMMIT: checking code
+##
+
+###################################################
+#
+
+###### Library used
+# load the libraries
+#library(spdep) #spatial analyses operations, functions etc.
+library(spdep)           # builds neighbors, and much, much more
+library(sf)              # reads and handels spatial data
+library(mapview)         # makes a fun web map, to vizualize the dat
+library(dplyr)           # data wrangling
+
+library(sp) # spatial/geographic objects and functions
+library(rgdal) #GDAL/OGR binding for R with functionalities
+library(gtools) # contains mixsort and other useful functions
+library(maptools) # tools to manipulate spatial data
+library(parallel) # parallel computation, part of base package no
+library(rasterVis) # raster visualization operations
+library(raster) # raster functionalities
+library(forecast) #ARIMA forecasting
+library(colorRamps) #contains matlab.like color palette
+library(rgeos) #contains topological operations
+library(sphet) #contains spreg, spatial regression modeling
+library(BMS) #contains hex2bin and bin2hex, Bayesian methods
+library(bitops) # function for bitwise operations
+library(foreign) # import datasets from SAS, spss, stata and other sources
+library(gdata) #read xls, dbf etc., not recently updated but useful
+library(classInt) #methods to generate class limits
+library(plyr) #data wrangling: various operations for splitting, combining data
+#library(gstat) #spatial interpolation and kriging methods
+library(readxl) #functionalities to read in excel type data
+library(psych) #pca/eigenvector decomposition functionalities
+library(snow)
+
+###### Functions used in this script and sourced from other files
+
+create_dir_fun <- function(outDir,out_suffix=NULL){
+  #if out_suffix is not null then append out_suffix string
+  if(!is.null(out_suffix)){
+    out_name <- paste("output_",out_suffix,sep="")
+    outDir <- file.path(outDir,out_name)
+  }
+  #create if does not exists
+  if(!file.exists(outDir)){
+    dir.create(outDir)
+  }
+  return(outDir)
+}
+
+#Used to load RData object saved within the functions produced.
+load_obj <- function(f){
+  env <- new.env()
+  nm <- load(f, env)[1]
+  env[[nm]]
+}
+
+#Benoit setup
+script_path <- "/nfs/bparmentier-data/Data/projects/neighborhood_desirability_in_urban_environment/scripts"
+#mosaicing_functions <- "weighted_mosaicing_functions_07252018.R"
+#source(file.path(script_path,mosaicing_functions))
+
+#########cd ###################################################################
+#####  Parameters and argument set up ########### 
+
+#ARGS 1
+in_dir <- "/nfs/bparmentier-data/Data/projects/neighborhood_desirability_in_urban_environment/data"
+#ARGS 2
+out_dir <- "/nfs/bparmentier-data/Data/projects/neighborhood_desirability_in_urban_environment/outputs"
+#ARGS 3:
+#NA_flag <- -999999
+NA_flag_val <- NULL
+#ARGS 4:
+file_format <- ".tif"
+#ARGS 5:
+create_out_dir_param=TRUE #create a new ouput dir if TRUE
+#ARGS 7
+out_suffix <-"spatiaLweights_pocessing_08092018" #output suffix for the files and ouptut folder
+#ARGS 8
+num_cores <- 2 # number of cores
+
+in_filename <- "analysisShapes/bf_chm.shp"
+
+################# START SCRIPT ###############################
+
+######### PART 0: Set up the output dir ################
+
+options(scipen=999)
+
+#set up the working directory
+#Create output directory
+
+if(is.null(out_dir)){
+  out_dir <- in_dir #output will be created in the input dir
+  
+}
+#out_dir <- in_dir #output will be created in the input dir
+
+out_suffix_s <- out_suffix #can modify name of output suffix
+if(create_out_dir_param==TRUE){
+  out_dir <- create_dir_fun(out_dir,out_suffix)
+  setwd(out_dir)
+}else{
+  setwd(out_dir) #use previoulsy defined directory
+}
+
+#######################################
 
 
 dTMP<-structure(list(jday = c(188L, 188L, 189L, 189L, 190L, 190L, 191L,
@@ -129,6 +252,8 @@ dTMP<-structure(list(jday = c(188L, 188L, 189L, 189L, 190L, 190L, 191L,
                                                                                                                                                               -188L), .Names = c("jday", "site", "temp.avg", "se"))
 
 dTMP$site<-as.factor(dTMP$site)   
+plot(dTMP$temp.avg)
+View(dTMP)
 library (nlme)    
 cs1 <- corARMA(c(0.2, 0.3), form = ~ 1 | site, p = 1, q = 1)
 m2a<-gls(temp.avg~site, data=dTMP, correlation=cs1)
@@ -136,4 +261,89 @@ m2a<-gls(temp.avg~site, data=dTMP, correlation=cs1)
 summary(m2a)
 anova(m2a)
 
+library(nlme)
 
+fit <- gls(dependentVariable ~ factor(time) + otherCoVariates?,
+           
+           data = df, corr = corSymm(form = ~ 1 | idOfEachLocation))
+
+#corr = corAR1(form =~ 1…)
+#but wonder if there are alternatives to consider seriously like de-trending or others. Maybe a repeated-measures ANOVA is sufficient?
+  
+
+#https://stats.stackexchange.com/questions/197607/how-to-test-difference-between-times-series-does-time-series-anova-exist
+
+
+# example data
+my.data <- data.frame(object = rep(c("obj_A","obj_B","obj_C",
+                                     "obj_D","obj_E","obj_F"),
+                                   each = 10),
+                      time = rep(c(1:10), times = 6),
+                      treatment = rep(c("A","B"), each = 30),
+                      value = c(4,4,7,8,8,10,8,12,14,12,
+                                8,8,12,12,10,12,10,11,12,16,
+                                12,12,11,13,12,16,16,14,16,20,
+                                11,20,23,27,31,29,31,32,28,30,
+                                12,16,17,23,22,24,33,31,31,32,
+                                14,13,19,20,24,26,24,28,25,23))
+
+# converting values to time series object
+obj_A <- ts(my.data$value[my.data$object=="obj_A"],
+            start = 1, end = 10, frequency = 1)
+obj_B <- ts(my.data$value[my.data$object=="obj_B"],
+            start = 1, end = 10, frequency = 1)
+obj_C <- ts(my.data$value[my.data$object=="obj_C"],
+            start = 1, end = 10, frequency = 1)
+obj_D <- ts(my.data$value[my.data$object=="obj_D"],
+            start = 1, end = 10, frequency = 1)
+obj_E <- ts(my.data$value[my.data$object=="obj_E"],
+            start = 1, end = 10, frequency = 1)
+obj_F <- ts(my.data$value[my.data$object=="obj_F"],
+            start = 1, end = 10, frequency = 1)
+
+# plot -> blue = treatment A; red = treatment B
+ts.plot(obj_A, obj_B, obj_C, obj_D, obj_E, obj_F,
+        col=c("deepskyblue","deepskyblue1","deepskyblue2",
+              "darkred","indianred","indianred1"),
+        lwd = 2.5, lty = 2, xlab = "time", ylab = "temperature")
+
+
+library(nlme)
+
+# Model assuming the same variance for each time point
+gls.fit <- 
+  gls(value ~ factor(time) + treatment, 
+      data = my.data,
+      corr = corSymm(form = ~ 1 | object),
+      control = glsControl(tolerance = 0.01, msTol = 0.01, 
+                           maxIter = 1000000, msMaxIter = 1000000))
+summary(gls.fit)
+
+# Model allowing for different variance structure for each time point 
+gls.fit.diff.var <- 
+  gls(value ~ factor(time) + treatment, 
+      data = my.data,
+      corr = corSymm(form = ~ 1 | object),
+      weights = varIdent(form = ~ 1 | factor(time)),
+      control = glsControl(tolerance = 0.01, msTol = 0.01, 
+                           maxIter = 1000000, msMaxIter = 1000000))
+summary(gls.fit.diff.var)
+
+############
+library(lme)
+library(nlme)
+
+data(Ovary)
+names(Ovary)
+
+plot(Ovary$Time)
+
+View(Ovary)
+plot(1:10)
+plot(Ovary)
+xyplot(follicles~Time|Mare,data=Ovary)
+mod <- lme(follicles~sin(2*pi*Time),
+                      data=Ovary,
+                      random=-1|Mare)
+
+############################# End of script ###############################
