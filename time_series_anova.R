@@ -378,4 +378,28 @@ mod3 <- lme(follicles ~ sin(2*pi*Time)+cos(2*pi*Time),
             data=Ovary)
 plot(ACF(mod3),alpha=0.05)
 
+#### model 4
+mod4 <- lme(follicles ~ sin(2*pi*Time)+cos(2*pi*Time),
+            random= ~1|Mare,
+            correlation=corARMA(q=2),
+            data=Ovary)
+anova(mod1,mod2)
+anova(mod3,mod4)
+
+plot(ACF(mod4),alpha=0.05)
+
+#### model 4
+mod5 <- lme(follicles ~ sin(2*pi*Time)+cos(2*pi*Time),
+            random= ~1|Mare,
+            correlation=corAR1(),
+            data=Ovary)
+anova(mod1,mod2)
+anova(mod3,mod4)
+anova(mod4,mod5)
+anova(mod1,mod2,mod3,mod4,mod5)
+
+plot(ACF(mod4),alpha=0.05)
+
+
+#
 ############################# End of script ###############################
